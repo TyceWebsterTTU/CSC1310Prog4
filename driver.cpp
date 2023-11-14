@@ -1,5 +1,5 @@
 #include<iostream>
-#include "markovMat.h"
+//#include "markovMat.h"
 #include "markovList.h"
 using namespace std;
 
