@@ -33,7 +33,6 @@ markovList::markovList(const char* filename)
 	stringstream parser, splitter;
 	string line, index, word;
 	float weight;
-	edge* newEdge;
 	int i = 0;
 	srand (time(0));
 	
@@ -47,13 +46,19 @@ markovList::markovList(const char* filename)
 		parser << line;
 		getline(parser, index,',');	//pulls the first word of the line, which is the node for which we're making a list of neighbors
 
-		corpus[index] = NULL;
+		//corpus[index] = NULL;
+		if(corpus.find(index) == corpus.end())
+		{
+			corpus[index] = NULL;
+		}
+
+		edge* curr = NULL;
 
 		//initialize an empty list at the index---
 		while(getline(parser, word, ','))
 		{
+			edge* newEdge;
 			//allocate a new node in the edge list---
-			newEdge = NULL;
 			newEdge = new edge;
 
 			splitter.clear();
@@ -63,26 +68,18 @@ markovList::markovList(const char* filename)
 			//stick word and weight on the node you've just allocated---
 			newEdge->weight = weight;
 			newEdge->word = word;
+			newEdge->next = NULL;
 
 			//make sure your new node is attached to the list---
-			if(corpus[index] == NULL)
+			if(curr == NULL)
 			{
 				corpus[index] = newEdge;
-				corpus[index]->next = NULL;
+				curr = newEdge;
 			}
 			else
 			{
-				edge* entry;
-
-				entry = corpus[index];
-
-				while(entry->next != NULL)
-				{
-					entry = entry->next;
-				}
-
-				entry->next = newEdge;
-				newEdge->next = NULL;
+				curr->next = newEdge;
+				curr = newEdge;
 			}
 		}
 	}}
@@ -90,10 +87,19 @@ markovList::markovList(const char* filename)
 
 markovList::~markovList()
 {
+	edge* curr;
+	edge* temp;
 	//write this
-	for(map<string, edge*>::iterator it = corpus.begin(); it != corpus.end(); it++)
+	for(map<string, edge*>::iterator it = corpus.begin(); it != corpus.end(); ++it)
 	{
-		delete corpus[it->first];
+		curr = it->second;
+
+		while(curr)
+		{
+			temp = curr->next;
+			delete curr;
+			curr = temp;
+		}
 	}
 }
 		
@@ -103,34 +109,41 @@ string markovList::generate(int length)
 	advance(it,rand() % corpusSize);	//this grabs a random node from your corpus as a starting point
 
 	//write the rest of this
-	string word, first;
-	int weight;
-	float roll;
-	edge* second;
+	string word;
+	float roll, total;
+	edge* curr;
 
-	first = it->first;
-	second = it->second;
-	weight = second->weight;
+	word = it->first;
+	curr = it->second;
 
-	for(int i = 0; i < length; i++)
+	for(int i = 1; i < length; i++)
 	{
-		roll = (float)rand() / RAND_MAX;
-
-		while(roll > weight)
+		if(curr == NULL)
 		{
-			weight += second->weight;
-			second = second->next;
+			break;
 		}
 
-		second = corpus[second->word];
+		roll =  (float)rand() / RAND_MAX;
 
-		word += first + second->word;
-		word += "\n";
-		first = second->word;
+		total = 0.0;
+
+		while(curr != NULL)
+		{
+			total += curr->weight;
+
+			if(total > roll)
+			{
+				word += " " + curr->word;
+				curr = corpus[curr->word];
+
+				break;
+			}
+
+			curr = curr->next;
+		}
 	}
 
 	return word;
 }
-
 
 #endif
