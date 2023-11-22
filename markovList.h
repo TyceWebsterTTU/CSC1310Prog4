@@ -1,3 +1,10 @@
+/*
+Authors: Tyce Webster and Isaac Essex
+Date:11/15/2023
+Filename:markovList.h
+Purpose: Utilize an AI algorithm called a Markov Chain. This one is done 
+using an adjancency list.
+*/
 #ifndef MARKOVLIST_H
 #define MARKOVLIST_H
 
@@ -34,9 +41,9 @@ markovList::markovList(const char* filename)
 	string line, index, word;
 	float weight;
 	int i = 0;
-	srand (time(0));
+	srand (time(0)); //Seeding randomness
 	
-	if(file.good()) {
+	if(file.good()) { //Checking file
 	file >> corpusSize;
 	file.ignore(1, '\n');
 	
@@ -87,9 +94,11 @@ markovList::markovList(const char* filename)
 
 markovList::~markovList()
 {
+	//pointers for tracking position in list
 	edge* curr;
 	edge* temp;
 	//write this
+	//iterate through the entire list and deallocate
 	for(map<string, edge*>::iterator it = corpus.begin(); it != corpus.end(); ++it)
 	{
 		curr = it->second;
@@ -113,9 +122,10 @@ string markovList::generate(int length)
 	float roll, total;
 	edge* curr;
 
-	word = it->first;
+	word = it->first; //establish a start to our string
 	curr = it->second;
 
+	//Loop for as many words as we want to generate
 	for(int i = 1; i < length; i++)
 	{
 		if(curr == NULL)
@@ -123,13 +133,14 @@ string markovList::generate(int length)
 			break;
 		}
 
-		roll =  (float)rand() / RAND_MAX;
+		roll =  (float)rand() / RAND_MAX; //determine what node we traverse to
 
 		total = 0.0;
 
+		//traverse to that random node
 		while(curr != NULL)
 		{
-			total += curr->weight;
+			total += curr->weight;//keep adding the weights of the individual nodes until they are greater than roll
 
 			if(total > roll)
 			{
@@ -139,10 +150,12 @@ string markovList::generate(int length)
 				break;
 			}
 
+			//if the total is not great enough yet, check the next node and add it to the total
 			curr = curr->next;
 		}
 	}
 
+	//finally, we have enough random words and can return them to be printed
 	return word;
 }
 

@@ -1,3 +1,4 @@
+
 #ifndef MARKOVMAT_H
 #define MARKOVMAT_H
 
@@ -15,6 +16,7 @@ class markovMat
 			map<string, int> buckets;
 		};
 		matrix corpus;
+		int corpusSize = 0;
 	public:
 		markovMat(const char*);
 		~markovMat();
